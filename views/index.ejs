@@ -69,9 +69,9 @@
     <hr>
     <div id="invoiceItems">
 		<% for (var i = 0; i < invoiceItems.length; i++){ %>
-				<h1>Company: <%= invoiceItems[i].company %></h1>				
+				<h1>Company: <%= invoiceItems[i].CompanyName %></h1>				
 				<h3> 
-					Invoice Name: <span id="taskName<%= i %>"><%= invoiceItems[i].name %> </span>
+					Invoice Name: <span id="taskName<%= i %>"><%= invoiceItems[i].FirstName %> </span>
 				</h3>
 				<input type="button" id="deleteItem<%= i %>Button" action="/invoice/delete" value="Remove">	
 				<hr>

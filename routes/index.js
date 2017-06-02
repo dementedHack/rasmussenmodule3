@@ -1,31 +1,49 @@
 var express = require('express');
 var router = express.Router();
-var mongoose = require('mongoose');
+// insert tedious driver 
+
+
 var async = require('async');
-var Schema = mongoose.Schema
+
+var Connection = require('tedious').Connection;
+var Request = require('tedious').Request;
+
 var models = {};
 var Invoice = require('../models/invoicedoc');
 
 //Promise to avoid errors
-var invoiceItems;
-var connectionString = "mongodb://mobiledb:GUd0MBA1Cf7XMWdJ6FvCsyCEOZW6W1062pg6V6KhLyPmhveQVhd3YMkq8s2N4BuvecnsH3KKCazGlfLGSUEyBg==@mobiledb.documents.azure.com:10255/?ssl=true";
-mongoose.Promise = require('bluebird');
+var invoiceItems = [];
 
 var stack = [];
 
-mongoose.connect(connectionString);
-var db = mongoose.connection;
+// Create connection to database
+var config = {
+  userName: 'kai', // update me
+  password: 'Keepitreal20', // update me
+  server: 'rasmussenmodule3dbserver.database.windows.net', // update me
+  options: {
+      database: 'module3DB', //update me
+      encrypt: true
+  }
+}
+var connection = new Connection(config);
 
-db.once('open', function() {
-	console.log('connected to DB successfully');
-	scanForInvoices();
+connection.on('connect', function(err) {
+    if (err) {
+        console.log(err)
+    }
+    else{
+        console.log('connected to DB successfully');
+        //queryDatabase();
+    }
 });
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  scanForInvoices();
+  invoiceItems = [];
+  queryDatabase();
   setTimeout(function(){
-  	res.render('index', { title: 'Invoice Scanner', invoiceItems: invoiceItems });  
+  	res.render('index', { title: 'Sample App', invoiceItems: invoiceItems });  
   }, 200);
   
 });
@@ -59,3 +77,28 @@ function scanForInvoices() {
 }
 
 module.exports = router;
+
+function queryDatabase(){
+    console.log('Reading rows from the Table...');
+
+    // Read all rows from table
+    request = new Request(
+    	// Query only returns a few fields
+        "SELECT TOP 10 FirstName, LastName, CompanyName FROM SalesLT.Customer",
+        function(err, rowCount, rows) {
+            console.log(rowCount + ' row(s) returned');
+        }
+    );
+
+    request.on('row', function(columns) {
+        var item = {};
+        columns.forEach(function(column) {
+            //console.log("%s\t%s", column.metadata.colName, column.value);
+            item[column.metadata.colName] = column.value; 
+        });
+            console.log(item);
+            invoiceItems.push(item);
+            console.log("------------------");
+    });
+    connection.execSql(request);
+}
